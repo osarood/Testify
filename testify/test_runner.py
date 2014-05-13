@@ -21,8 +21,10 @@ __testify = 1
 from collections import defaultdict
 import itertools
 import functools
+from operator import itemgetter
 import pprint
 import sys
+#from service.config import configure
 
 from test_case import MetaTestCase, TestCase
 import test_discovery
@@ -73,6 +75,8 @@ class TestRunner(object):
 
         self.failure_limit = failure_limit
         self.failure_count = 0
+
+
 
     @classmethod
     def get_test_method_name(cls, test_method):
@@ -145,7 +149,39 @@ class TestRunner(object):
         test_method_count = sum(len(list(test_case.runnable_test_methods())) for test_case in discovered_tests)
         for reporter in self.test_reporters:
             reporter.test_counts(test_case_count, test_method_count)
-        return discovered_tests
+######
+## OSMAN Change
+        sorted_disc_tests = []
+        fd = open('/nail/home/osarood/Work/Testify/testify/exe_times.dat','r')
+        exe_times_dict = {}
+        for line in fd:
+            l = line.split()
+            exe_times_dict[l[0]]= float(l[1])
+        #print('\n\nxxxx->',exe_times_dict)
+        big_dict = []
+        for idx, test_case in enumerate(discovered_tests):
+         #   print('dddddddddddddddddd  c->',test_case.__class__.__name__)
+            if test_case.__class__.__name__ in exe_times_dict:
+                exe_t = exe_times_dict[test_case.__class__.__name__]
+            else:
+                exe_t = 0.0
+            big_dict.append({'class_name':test_case.__class__.__name__,'org_idx':idx,'exe_time':exe_t})
+
+        big_dict_sorted = sorted(big_dict, key=itemgetter('exe_time'), reverse=True)
+
+        sorted_discovered_tests = list(discovered_tests)
+        for idx, this_class in enumerate(big_dict_sorted):
+            #print('++++++++ 
+            sorted_discovered_tests[idx] = discovered_tests[big_dict_sorted[idx]['org_idx']]
+        #print('\n\n sorted->',big_dict_sorted,'\n\n')
+# OSMAN change ends
+######
+            #for xx in test_case.runnable_test_methods():
+        return sorted_discovered_tests
+
+            
+            
+
 
     def run(self):
         """Instantiate our found test case classes and run their test methods.
@@ -159,7 +195,7 @@ class TestRunner(object):
         At its conclusion, we pass our collected results to our TestLogger to
         print out exceptions and testing summaries.
         """
-
+        print('+++++++++++++ in test runner +++++++++++')
         try:
             for test_case in self.discover():
                 if self.failure_limit and self.failure_count >= self.failure_limit:
@@ -234,6 +270,7 @@ class TestRunner(object):
 
     def list_tests(self, selected_suite_name=None):
         """Lists all tests, optionally scoped to a single suite."""
+        print('---list tests---- suite->'+str(selected_suite_name))
         test_list = self.get_tests_for_suite(selected_suite_name)
         for test_method_name in (
             self.get_test_method_name(test)
