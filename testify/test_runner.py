@@ -99,6 +99,7 @@ class TestRunner(object):
             return test_case
 
         def discover_tests():
+            print('---- in discover_tests ----')
             return [
                 construct_test(test_case_class)
                 for test_case_class in test_discovery.discover(self.test_path_or_test_case)
@@ -106,6 +107,7 @@ class TestRunner(object):
             ]
 
         def discover_tests_by_buckets():
+            print('---- in discover_tests_by_buckets ----')
             # Sort by the test count, use the cmp_str as a fallback for determinism
             test_cases = sorted(
                 discover_tests(),
@@ -169,7 +171,7 @@ class TestRunner(object):
             big_dict.append({'class_name':test_case.__class__.__name__,'org_idx':idx,'exe_time':exe_t})
 
         big_dict_sorted = sorted(big_dict, key=itemgetter('exe_time'), reverse=True)
-
+        print('---- sorting done ----')
         sorted_discovered_tests = list(discovered_tests)
         for idx, this_class in enumerate(big_dict_sorted):
             #print('++++++++ 
@@ -248,6 +250,7 @@ class TestRunner(object):
 
     def list_suites(self):
         """List the suites represented by this TestRunner's tests."""
+        print('---- in list_suites method -----')
         suites = defaultdict(list)
         for test_instance in self.discover():
             for test_method in test_instance.runnable_test_methods():
@@ -262,6 +265,7 @@ class TestRunner(object):
 
     def get_tests_for_suite(self, selected_suite_name):
         """Gets the test list for the suite"""
+        print('---- in get_tests_for_suite ----')
         test_list = []
         for test_instance in self.discover():
             for test_method in test_instance.runnable_test_methods():
