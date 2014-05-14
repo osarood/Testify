@@ -152,7 +152,8 @@ class TestRunner(object):
 ######
 ## OSMAN Change
         sorted_disc_tests = []
-        fd = open('/nail/home/osarood/Work/Testify/testify/exe_times.dat','r')
+        fd = open('/nail/home/osarood/yelp/Testify/testify/exe_times.dat','r')
+        print('---- file opened ----')
         exe_times_dict = {}
         for line in fd:
             l = line.split()
