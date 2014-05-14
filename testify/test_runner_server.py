@@ -265,6 +265,7 @@ class TestRunnerServer(TestRunner):
             # Enqueue all of our tests.
             discovered_tests = []
             try:
+                print '===== coming in test_runner_server run method ======'
                 discovered_tests = self.discover()
             except Exception, exc:
                 _log.debug("Test discovery blew up!: %r" % exc)
@@ -280,6 +281,7 @@ class TestRunnerServer(TestRunner):
                     # it will signal us by sending back a result with method
                     # name 'run'. Add this result to the list we expect to get
                     # back from the client.
+                    print '== putting ->',test_dict['class_path']
                     test_dict['methods'].append('run')
                     self.test_queue.put(0, test_dict)
 

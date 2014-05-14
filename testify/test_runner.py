@@ -142,6 +142,7 @@ class TestRunner(object):
             elif self.bucket is not None:
                 discovered_tests = discover_tests_by_buckets()
             else:
+                print('---- calling from discover() ---')
                 discovered_tests = discover_tests()
         except test_discovery.DiscoveryError, exc:
             for reporter in self.test_reporters:
@@ -178,7 +179,7 @@ class TestRunner(object):
             sorted_discovered_tests[idx] = discovered_tests[big_dict_sorted[idx]['org_idx']]
         #print('\n\n sorted->',big_dict_sorted,'\n\n')
         print('---- top 10 methods')
-        for x in range(0,10):
+        for x in range(0,3):
             print(x,'->',sorted_discovered_tests[x])
         
 # OSMAN change ends
