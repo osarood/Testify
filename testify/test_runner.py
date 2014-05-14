@@ -177,6 +177,10 @@ class TestRunner(object):
             #print('++++++++ 
             sorted_discovered_tests[idx] = discovered_tests[big_dict_sorted[idx]['org_idx']]
         #print('\n\n sorted->',big_dict_sorted,'\n\n')
+        print('---- top 10 methods')
+        for x in range(0,10):
+            print(x,'->',sorted_discovered_tests[x])
+        
 # OSMAN change ends
 ######
             #for xx in test_case.runnable_test_methods():
