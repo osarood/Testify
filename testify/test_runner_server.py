@@ -34,7 +34,6 @@ class AsyncDelayedQueue(object):
         self.data_queue = Queue.PriorityQueue()
         self.callback_queue = Queue.PriorityQueue()
         self.finalized = False
-        self.cur_prio = 0
 
     def get(self, c_priority, callback, runner=None):
         """Queue up a callback to receive a test."""
@@ -268,6 +267,7 @@ class TestRunnerServer(TestRunner):
         try:
             # Enqueue all of our tests.
             discovered_tests = []
+            cur_prio = 0
             try:
                 print '===== coming in test_runner_server run method ======'
                 discovered_tests = self.discover()
@@ -285,10 +285,10 @@ class TestRunnerServer(TestRunner):
                     # it will signal us by sending back a result with method
                     # name 'run'. Add this result to the list we expect to get
                     # back from the client.
-                    print '== putting ->',test_dict['class_path'],' prio->',self.cur_prio
+                    print '== putting ->',test_dict['class_path'],' prio->',cur_prio
                     test_dict['methods'].append('run')
-                    self.test_queue.put(self.cur_prio, test_dict)
-                    self.cur_pri +=1
+                    self.test_queue.put(cur_prio, test_dict)
+                    cur_prio +=1
 
             # Start an HTTP server.
             application = tornado.web.Application([
