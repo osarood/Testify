@@ -77,6 +77,7 @@ class AsyncDelayedQueue(object):
             while data is None:
                 try:
                     d_priority, data = self.data_queue.get_nowait()
+                    print '::: getting data->',data,' prio->',d_priority,' runner->',runner
                 except Queue.Empty:
                     break
 
@@ -155,11 +156,13 @@ class TestRunnerServer(TestRunner):
             else:
                 if self.test_queue.empty():
                     # Put the test back in the queue, and queue ourselves to pick up the next test queued.
+                    print '== 22 putting ->',test_dict['class_path']
                     self.test_queue.put(priority, test_dict)
                     self.test_queue.callback_queue.put((-1, callback))
                 else:
                     # Get the next test, process it, then place the old test back in the queue.
                     self.test_queue.get(0, callback, runner=runner_id)
+                    print '== 33 putting ->',test_dict['class_path']
                     self.test_queue.put(priority, test_dict)
 
         self.test_queue.get(0, callback, runner=runner_id)
@@ -417,6 +420,7 @@ class TestRunnerServer(TestRunner):
                         reporter.test_complete(result_dict)
 
         if requeue_dict['methods']:
+            print '== 11 putting ->',requeue_dict['class_path']
             self.test_queue.put(-1, requeue_dict)
 
         if self.test_queue.empty() and len(self.checked_out) == 0:
