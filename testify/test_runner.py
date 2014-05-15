@@ -164,12 +164,13 @@ class TestRunner(object):
         #print('\n\nxxxx->',exe_times_dict)
         big_dict = []
         for idx, test_case in enumerate(discovered_tests):
-         #   print('dddddddddddddddddd  c->',test_case.__class__.__name__)
-            if test_case.__class__.__name__ in exe_times_dict:
-                exe_t = exe_times_dict[test_case.__class__.__name__]
+            #print('dddddddddddddddddd  m->',test_case.__module__,' c->',test_case.__class__.__name__)
+            class_path = test_case.__module__ + '.' + test_case.__class__.__name__
+            if class_path in exe_times_dict:
+                exe_t = exe_times_dict[class_path]
             else:
                 exe_t = 0.0
-            big_dict.append({'class_name':test_case.__class__.__name__,'org_idx':idx,'exe_time':exe_t})
+            big_dict.append({'class_name':class_path,'org_idx':idx,'exe_time':exe_t})
 
         big_dict_sorted = sorted(big_dict, key=itemgetter('exe_time'), reverse=True)
         print('---- sorting done ----')
