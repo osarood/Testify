@@ -32,10 +32,12 @@ class TestRunnerClient(TestRunner):
         finished = False
         first_connect = True
         while not finished:
+            st_time = time.time()
             class_path, methods, finished = self.get_next_tests(
                 retry_limit=(self.retry_limit if first_connect else self.reconnect_retry_limit),
                 retry_interval=self.retry_interval,
             )
+            print '---> req sent-> ',st_time,' req rec->', time.time(), ' ->',class_path
             first_connect = False
             if class_path and methods:
                 module_path, _, class_name = class_path.partition(' ')

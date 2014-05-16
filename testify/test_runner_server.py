@@ -77,7 +77,7 @@ class AsyncDelayedQueue(object):
             while data is None:
                 try:
                     d_priority, data = self.data_queue.get_nowait()
-                    print '::: getting data->',data,' prio->',d_priority,' runner->',runner
+                    print '::: t->', time.time(),' getting data->',data,' prio->',d_priority,' runner->',runner
                 except Queue.Empty:
                     break
 
