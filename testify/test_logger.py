@@ -152,7 +152,7 @@ class TextTestLogger(TestLoggerBase):
 
     def report_test_name(self, test_method):
         if self.options.verbosity >= VERBOSITY_VERBOSE:
-            self.write("%s ... " % self._format_test_method_name(test_method))
+            self.write("%s .^.^. " % self._format_test_method_name(test_method))
 
     def report_test_result(self, result):
         if self.options.verbosity > VERBOSITY_SILENT:

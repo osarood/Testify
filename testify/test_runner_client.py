@@ -57,7 +57,7 @@ class TestRunnerClient(TestRunner):
             response = urllib2.urlopen(url)
             res_time = time.time()
             d = json.load(response)
-            print '-- 11 ---> req sent-> ',st_time,' req rec->', res_time,' json->',time.time(), ' ->',class_path
+            logging.warning('-- 11 ---> req sent-> '+str(st_time)+' req rec->'+str(res_time)+' json->'+str(time.time())+ ' ->'+str(class_path))
             return (d.get('class'), d.get('methods'), d['finished'])
         except urllib2.HTTPError, e:
             logging.warning("Got HTTP status %d when requesting tests -- bailing" % (e.code))
