@@ -135,8 +135,8 @@ def parse_test_runner_command_line_args(plugin_modules, args):
     parser.add_option('--disable-requeueing', action="store_true", dest="disable_requeueing", help="Disable re-queueing/re-running failed tests on a different builder.")
 
     parser.add_option('--failure-limit', action="store", dest="failure_limit", type="int", default=None, help="Quit after this many test failures.")
-    parser.add_option('--runner-timeout', action="store", dest="runner_timeout", type="int", default=600, help="How long to wait to wait for activity from a test runner before requeuing the tests it has checked out.")
-    parser.add_option('--server-timeout', action="store", dest="server_timeout", type="int", default=600, help="How long to wait after the last activity from any test runner before shutting down.")
+    parser.add_option('--runner-timeout', action="store", dest="runner_timeout", type="int", default=250, help="How long to wait to wait for activity from a test runner before requeuing the tests it has checked out.")
+    parser.add_option('--server-timeout', action="store", dest="server_timeout", type="int", default=250, help="How long to wait after the last activity from any test runner before shutting down.")
 
     parser.add_option('--server-shutdown-delay', action='store', dest='shutdown_delay_for_connection_close', type="float", default=0.01, help="How long to wait (in seconds) for data to finish writing to sockets before shutting down the server.")
     parser.add_option('--server-shutdown-delay-outstanding-runners', action='store', dest='shutdown_delay_for_outstanding_runners', type='int', default=5, help="How long to wait (in seconds) for all clients to check for new tests before shutting down the server.")
