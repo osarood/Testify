@@ -25,7 +25,7 @@ class TestRunnerClient(TestRunner):
         self.retry_limit = kwargs['options'].retry_limit
         self.retry_interval = kwargs['options'].retry_interval
         self.reconnect_retry_limit = kwargs['options'].reconnect_retry_limit
-
+        print '===== INIT CLIENT ===='
         super(TestRunnerClient, self).__init__(*args, **kwargs)
 
     def discover(self):
