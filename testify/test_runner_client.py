@@ -25,7 +25,7 @@ class TestRunnerClient(TestRunner):
         self.retry_limit = kwargs['options'].retry_limit
         self.retry_interval = kwargs['options'].retry_interval
         self.reconnect_retry_limit = kwargs['options'].reconnect_retry_limit
-        print '===== INIT CLIENT ===='
+        loggin.warning('===== INIT CLIENT ====')
         super(TestRunnerClient, self).__init__(*args, **kwargs)
 
     def discover(self):
@@ -37,7 +37,7 @@ class TestRunnerClient(TestRunner):
                 retry_limit=(self.retry_limit if first_connect else self.reconnect_retry_limit),
                 retry_interval=self.retry_interval,
             )
-            print '---> req sent-> ',st_time,' req rec->', time.time(), ' ->',class_path
+            python.warning('---> req sent-> '+str(st_time)+' req rec->'+str(time.time())+' ->'+class_path)
             first_connect = False
             if class_path and methods:
                 module_path, _, class_name = class_path.partition(' ')
