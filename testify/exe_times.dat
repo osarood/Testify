@@ -6787,7 +6787,7 @@ yelp.tests.cmds.js_tester_test.TestJSTester 0.336860001087 0.0245755016804
 yelp.tests.web.assets.js_tests_test.TestJsTests_admin 0.0332380000327 0.00127400004567
 yelp.tests.web.assets.js_tests_test.TestJsTests_biz 0.0222460000659 0.00253050003812
 yelp.tests.web.assets.js_tests_test.TestJsTests_mobile 0.037492000105 0.0080380000727
-yelp.tests.web.assets.js_tests_test.TestJsTests_www 0.0437359999924 0.00155249999079
+yelp.tests.web.assets.js_tests_test.TestJsTests_www 1000.0437359999924 0.00155249999079
 yelp.tests.common_templates.lib.js_timing_test.TestJsTimingJqueryEnabled 1.6321259737 0.62527449429
 yelp.tests.common_templates.lib.js_timing_test.TestJsTimingNoFrontendChannel 0.373353004456 0.00535850226879
 yelp.tests.common_templates.lib.js_timing_test.TestJsTimingPrototypeCase 0.413560986519 0.0593679994345
