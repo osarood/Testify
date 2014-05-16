@@ -250,6 +250,8 @@ class TestProgram(object):
             self.test_runner_args['serve_port'] = self.other_opts.serve_port
         elif self.other_opts.connect_addr:
             from test_runner_client import TestRunnerClient
+            print '--------- creating a client ------ ',self.other_opts.runner_id
+            log.info("--------- creating a client ------ "+self.other_opts.runner_id) 
             test_runner_class = TestRunnerClient
             self.test_runner_args['connect_addr'] = self.other_opts.connect_addr
             self.test_runner_args['runner_id'] = self.other_opts.runner_id

@@ -25,7 +25,8 @@ class TestRunnerClient(TestRunner):
         self.retry_limit = kwargs['options'].retry_limit
         self.retry_interval = kwargs['options'].retry_interval
         self.reconnect_retry_limit = kwargs['options'].reconnect_retry_limit
-        loggin.warning('===== INIT CLIENT ====')
+        logging.warning('===== INIT CLIENT ====')
+        print ' ----- IN TestRunnerClient ------'
         super(TestRunnerClient, self).__init__(*args, **kwargs)
 
     def discover(self):
@@ -52,6 +53,7 @@ class TestRunnerClient(TestRunner):
             else:
                 url = 'http://%s/tests?runner=%s' % (self.connect_addr, self.runner_id)
             st_time = time.time()
+            logging.warning(' -- st->'+str(st_time))
             response = urllib2.urlopen(url)
             res_time = time.time()
             d = json.load(response)
