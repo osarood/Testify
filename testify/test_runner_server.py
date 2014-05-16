@@ -285,7 +285,7 @@ class TestRunnerServer(TestRunner):
                     # it will signal us by sending back a result with method
                     # name 'run'. Add this result to the list we expect to get
                     # back from the client.
-                    print '== putting ->',test_dict['class_path'],' prio->',cur_prio
+                    #print '== putting ->',test_dict['class_path'],' prio->',cur_prio
                     test_dict['methods'].append('run')
                     self.test_queue.put(cur_prio, test_dict)
                     cur_prio +=1
