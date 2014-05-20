@@ -28,6 +28,9 @@ class TestRunnerClient(TestRunner):
         logging.warning('===== INIT CLIENT ====')
         print ' ----- IN TestRunnerClient ------'
         super(TestRunnerClient, self).__init__(*args, **kwargs)
+        fName = '/nail/home/osarood/logs/latency_'+str(self.runner_id)
+        self.fd_latency = open(fName,'w')
+        logging.warning('---- FILE CREATED --- f->'+str(fName))
 
     def discover(self):
         finished = False
@@ -38,7 +41,7 @@ class TestRunnerClient(TestRunner):
                 retry_limit=(self.retry_limit if first_connect else self.reconnect_retry_limit),
                 retry_interval=self.retry_interval,
             )
-            python.warning('---> req sent-> '+str(st_time)+' req rec->'+str(time.time())+' ->'+class_path)
+            #python.warning('---> req sent-> '+str(st_time)+' req rec->'+str(time.time())+' ->'+class_path)
             first_connect = False
             if class_path and methods:
                 module_path, _, class_name = class_path.partition(' ')
@@ -52,12 +55,13 @@ class TestRunnerClient(TestRunner):
                 url = 'http://%s/tests?runner=%s&revision=%s' % (self.connect_addr, self.runner_id, self.revision)
             else:
                 url = 'http://%s/tests?runner=%s' % (self.connect_addr, self.runner_id)
-            st_time = time.time()
-            logging.warning(' -- st->'+str(st_time))
+            st_time = time.time()*1000
             response = urllib2.urlopen(url)
-            res_time = time.time()
+            res_time = time.time()*1000
             d = json.load(response)
             class_path = d.get('class')
+            self.fd_latency.write(str(st_time)+' '+str(res_time)+' '+str(res_time-st_time)+' '+str(class_path)+'\n')
+            self.fd_latency.flush()
             logging.warning('-- 11 ---> req sent-> '+str(st_time)+' req rec->'+str(res_time)+' json->'+str(time.time())+ ' ->'+str(class_path))
             return (class_path, d.get('methods'), d['finished'])
         except urllib2.HTTPError, e:

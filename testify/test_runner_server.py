@@ -138,11 +138,22 @@ class TestRunnerServer(TestRunner):
         self.runners = set() # The set of runner_ids who have asked for tests.
         self.runners_outstanding = set() # The set of runners who have posted results but haven't asked for the next test yet.
         self.shutting_down = False # Whether shutdown() has been called.
+        self.last_reset = time.time()
+        self.num_reqs = 0
+        self.fd_reqs = open('/nail/home/osarood/logs/server_reqs','w')
 
         super(TestRunnerServer, self).__init__(*args, **kwargs)
 
     def get_next_test(self, runner_id, on_test_callback, on_empty_callback):
         """Enqueue a callback (which should take one argument, a test_dict) to be called when the next test is available."""
+        if time.time() - self.last_reset > 10:
+            self.last_reset = time.time()
+            fd_reqs.write(str(time.time())+' '+str(self.num_reqs))
+            self.num_reqs = 0
+        else:
+            print '--> req from run->',str(runner_id)
+            self.num_reqs +=1
+            
 
         self.runners.add(runner_id)
 
