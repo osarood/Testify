@@ -37,13 +37,19 @@ class TestRunnerClient(TestRunner):
         first_connect = True
         while not finished:
             st_time = time.time()
-            class_path, methods, finished = self.get_next_tests(
+            #class_path, methods, finished = self.get_next_tests(
+            d_list = self.get_next_tests(
                 retry_limit=(self.retry_limit if first_connect else self.reconnect_retry_limit),
                 retry_interval=self.retry_interval,
             )
             #python.warning('---> req sent-> '+str(st_time)+' req rec->'+str(time.time())+' ->'+class_path)
             first_connect = False
-            if class_path and methods:
+            #if class_path and methods:
+            for d_ins in d_list:
+                print 'rrr d_ins->',d_ins
+                class_path = d_ins.get('class')
+                methods = d_ins.get('methods')
+                finished = d_ins.get('finished')
                 module_path, _, class_name = class_path.partition(' ')
 
                 klass = test_discovery.import_test_class(module_path, class_name)
@@ -58,12 +64,13 @@ class TestRunnerClient(TestRunner):
             st_time = time.time()*1000
             response = urllib2.urlopen(url)
             res_time = time.time()*1000
-            d = json.load(response)
-            class_path = d.get('class')
-            self.fd_latency.write(str(st_time)+' '+str(res_time)+' '+str(res_time-st_time)+' '+str(class_path)+'\n')
+            d_list = json.load(response)
+            #class_path = d.get('class')
+            self.fd_latency.write(str(st_time)+' '+str(res_time)+' '+str(res_time-st_time)+'\n')
             self.fd_latency.flush()
-            logging.warning('-- 11 ---> req sent-> '+str(st_time)+' req rec->'+str(res_time)+' json->'+str(time.time())+ ' ->'+str(class_path))
-            return (class_path, d.get('methods'), d['finished'])
+            logging.warning('-- 11 ---> req sent-> '+str(st_time)+' req rec->'+str(res_time)+' json->'+str(time.time()))
+            #return (class_path, d.get('methods'), d['finished'])
+            return d_list
         except urllib2.HTTPError, e:
             logging.warning("Got HTTP status %d when requesting tests -- bailing" % (e.code))
             return None, None, True

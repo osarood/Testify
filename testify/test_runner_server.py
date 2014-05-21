@@ -34,6 +34,7 @@ class AsyncDelayedQueue(object):
         self.data_queue = Queue.PriorityQueue()
         self.callback_queue = Queue.PriorityQueue()
         self.finalized = False
+        self.class_exe_times_dict = {}
 
     def get(self, c_priority, callback, runner=None):
         """Queue up a callback to receive a test."""
@@ -60,10 +61,10 @@ class AsyncDelayedQueue(object):
         the vast majority of the time, the first callback will match
         the first test).
         """
-
         callback = None
         runner = None
-        data = None
+        data_list = []
+        prio_list = []
 
         skipped_callbacks = []
         while callback is None:
@@ -73,21 +74,24 @@ class AsyncDelayedQueue(object):
             except Queue.Empty:
                 break
 
-            skipped_tests = []
-            while data is None:
+            while len(data_list) ==0:
                 try:
-                    d_priority, data = self.data_queue.get_nowait()
-                    print '::: t->', time.time(),' getting data->',data,' prio->',d_priority,' runner->',runner
+                    total_expected_time = 0
+                    while total_expected_time < 10:
+                        d_priority, data = self.data_queue.get_nowait()
+                        if runner is not None and data.get('last_runner') == runner:
+                            print ';;;; dont run here again d->',data['class_path']
+                            self.data_queue.put((d_priority, data))
+                            continue
+                        else:
+                            prio_list.append(d_priority)
+                            data_list.append(data)
+                            this_class_name = data['class_path'].split()
+                            total_expected_time += self.class_exe_times_dict[this_class_name[0]+'.'+this_class_name[1]]
+                            print '  ::: t->', time.time(),' this x t->',self.class_exe_times_dict[this_class_name[0]+'.'+this_class_name[1]],' getting data->',data
+                    print ':: T->',total_expected_time,' cases->',len(data_list)
                 except Queue.Empty:
                     break
-
-                if runner is not None and data.get('last_runner') == runner:
-                    skipped_tests.append((d_priority, data))
-                    data = None
-                    continue
-
-            for skipped in skipped_tests:
-                self.data_queue.put(skipped)
 
             if data is None:
                 skipped_callbacks.append((c_priority, callback, runner))
@@ -98,7 +102,7 @@ class AsyncDelayedQueue(object):
             self.callback_queue.put(skipped)
 
         if callback is not None:
-            callback(d_priority, data)
+            callback(prio_list, data_list)
             tornado.ioloop.IOLoop.instance().add_callback(self.match)
 
     def empty(self):
@@ -130,7 +134,6 @@ class TestRunnerServer(TestRunner):
         self.shutdown_delay_for_outstanding_runners = kwargs['options'].shutdown_delay_for_outstanding_runners
         self.disable_requeueing = kwargs['options'].disable_requeueing
 
-        self.test_queue = AsyncDelayedQueue()
         self.checked_out = {} # Keyed on class path (module class).
         self.failed_rerun_methods = set() # Set of (class_path, method) who have failed.
         self.timeout_rerun_methods = set() # Set of (class_path, method) who were sent to a client but results never came.
@@ -144,37 +147,26 @@ class TestRunnerServer(TestRunner):
 
         super(TestRunnerServer, self).__init__(*args, **kwargs)
 
+        self.test_queue = AsyncDelayedQueue()
+        self.test_queue.class_exe_times_dict = self.class_exe_times_dict
+
     def get_next_test(self, runner_id, on_test_callback, on_empty_callback):
         """Enqueue a callback (which should take one argument, a test_dict) to be called when the next test is available."""
-        if time.time() - self.last_reset > 10:
-            self.last_reset = time.time()
-            fd_reqs.write(str(time.time())+' '+str(self.num_reqs))
-            self.num_reqs = 0
-        else:
-            print '--> req from run->',str(runner_id)
-            self.num_reqs +=1
             
 
         self.runners.add(runner_id)
-
-        def callback(priority, test_dict):
-            if not test_dict:
+        print '=====> coming in get_next_test ===== run->',runner_id
+        #def callback(priority, test_dict):
+        def callback(prio_list, data_list):
+            if len(data_list)==0:
                 return on_empty_callback()
+            else: 
 
-            if test_dict.get('last_runner', None) != runner_id or (self.test_queue.empty() and len(self.runners) <= 1):
-                self.check_out_class(runner_id, test_dict)
-                on_test_callback(test_dict)
-            else:
-                if self.test_queue.empty():
-                    # Put the test back in the queue, and queue ourselves to pick up the next test queued.
-                    print '== 22 putting ->',test_dict['class_path']
-                    self.test_queue.put(priority, test_dict)
-                    self.test_queue.callback_queue.put((-1, callback))
-                else:
-                    # Get the next test, process it, then place the old test back in the queue.
-                    self.test_queue.get(0, callback, runner=runner_id)
-                    print '== 33 putting ->',test_dict['class_path']
-                    self.test_queue.put(priority, test_dict)
+        #        for test_dict in data_list:
+                #if test_dict.get('last_runner', None) != runner_id or (self.test_queue.empty() and len(self.runners) <= 1):
+                #    self.check_out_class(runner_id, test_dict)
+                print '@@@@@ ',data_list 
+                on_test_callback(data_list)
 
         self.test_queue.get(0, callback, runner=runner_id)
 
@@ -220,7 +212,16 @@ class TestRunnerServer(TestRunner):
             @tornado.web.asynchronous
             def get(handler):
                 runner_id = handler.get_argument('runner')
-
+                time_since_last = time.time() - self.last_reset
+                print '=========> coming in TestHandler t->',time.time(),' last_reset->',self.last_reset,' time_since_last->',time_since_last
+                if time_since_last > 10:
+                    self.last_reset = time.time()
+                    self.fd_reqs.write(str(time.time())+' '+str(self.num_reqs)+'\n')
+                    self.fd_reqs.flush()
+                    self.num_reqs = 0
+                else:
+                    self.num_reqs +=1
+                    print '--> req from reqs->',self.num_reqs,' run->',str(runner_id)
                 if self.shutting_down:
                     self.runners_outstanding.discard(runner_id)
                     return handler.finish(json.dumps({
@@ -230,13 +231,17 @@ class TestRunnerServer(TestRunner):
                 if self.revision and self.revision != handler.get_argument('revision'):
                     return handler.send_error(409, reason="Incorrect revision %s -- server is running revision %s" % (handler.get_argument('revision'), self.revision))
 
-                def callback(test_dict):
+                #def callback(test_dict):
+                def callback(data_list):
                     self.runners_outstanding.discard(runner_id)
-                    handler.finish(json.dumps({
+                    strs = [json.dumps({
                         'class': test_dict['class_path'],
                         'methods': test_dict['methods'],
                         'finished': False,
-                    }))
+                    }) for test_dict in data_list]
+                    json_str = "[%s]" % ",\n".join(strs)
+                    print 'json str->',json_str
+                    handler.finish(json_str)
 
                 def empty_callback():
                     self.runners_outstanding.discard(runner_id)
