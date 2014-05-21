@@ -64,7 +64,7 @@ class AsyncDelayedQueue(object):
         callback = None
         runner = None
         data = None
-
+        data_list = []
         skipped_callbacks = []
         while callback is None:
 
@@ -74,7 +74,7 @@ class AsyncDelayedQueue(object):
                 break
 
             skipped_tests = []
-            while data is None:
+            while len(data_list) == 0:
                 try:
                     d_priority, data = self.data_queue.get_nowait()
                 except Queue.Empty:
@@ -84,6 +84,9 @@ class AsyncDelayedQueue(object):
                     skipped_tests.append((d_priority, data))
                     data = None
                     continue
+                else:
+                    data_list.append((d_priority, data))
+                    
 
             for skipped in skipped_tests:
                 self.data_queue.put(skipped)
@@ -97,7 +100,7 @@ class AsyncDelayedQueue(object):
             self.callback_queue.put(skipped)
 
         if callback is not None:
-            callback(d_priority, data)
+            callback(data_list)
             tornado.ioloop.IOLoop.instance().add_callback(self.match)
 
     def empty(self):
@@ -145,7 +148,9 @@ class TestRunnerServer(TestRunner):
 
         self.runners.add(runner_id)
 
-        def callback(priority, test_dict):
+        #def callback(priority, test_dict):
+        def callback(data_list):
+            (priority, test_dict) = data_list[0]
             if not test_dict:
                 return on_empty_callback()
 
