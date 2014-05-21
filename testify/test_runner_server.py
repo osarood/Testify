@@ -156,7 +156,7 @@ class TestRunnerServer(TestRunner):
 
             if test_dict.get('last_runner', None) != runner_id or (self.test_queue.empty() and len(self.runners) <= 1):
                 self.check_out_class(runner_id, test_dict)
-                on_test_callback(test_dict)
+                on_test_callback([test_dict])
             else:
                 if self.test_queue.empty():
                     # Put the test back in the queue, and queue ourselves to pick up the next test queued.
@@ -221,13 +221,23 @@ class TestRunnerServer(TestRunner):
                 if self.revision and self.revision != handler.get_argument('revision'):
                     return handler.send_error(409, reason="Incorrect revision %s -- server is running revision %s" % (handler.get_argument('revision'), self.revision))
 
-                def callback(test_dict):
+                #def callback(test_dict):
+                def callback(data_list):
+                    #self.runners_outstanding.discard(runner_id)
+                    #handler.finish(json.dumps({
+                    #    'class': test_dict['class_path'],
+                    #    'methods': test_dict['methods'],
+                    #    'finished': False,
+                    #}))
                     self.runners_outstanding.discard(runner_id)
-                    handler.finish(json.dumps({
+                    strs = [json.dumps({
                         'class': test_dict['class_path'],
                         'methods': test_dict['methods'],
                         'finished': False,
-                    }))
+                    }) for test_dict in data_list]
+                    json_str = "[%s]" % ",\n".join(strs)
+                    print 'json str->',json_str
+                    handler.finish(json_str)
 
                 def empty_callback():
                     self.runners_outstanding.discard(runner_id)
