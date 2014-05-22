@@ -63,7 +63,6 @@ class AsyncDelayedQueue(object):
 
         callback = None
         runner = None
-        data = None
         data_list = []
         skipped_callbacks = []
         while callback is None:
@@ -75,17 +74,20 @@ class AsyncDelayedQueue(object):
 
             skipped_tests = []
             while len(data_list) == 0:
-                try:
-                    d_priority, data = self.data_queue.get_nowait()
-                except Queue.Empty:
-                    break
-
-                if runner is not None and data.get('last_runner') == runner:
-                    skipped_tests.append((d_priority, data))
+                for x in range(0,2):
                     data = None
-                    continue
-                else:
-                    data_list.append((d_priority, data))
+                    try:
+                        d_priority, data = self.data_queue.get_nowait()
+                    except Queue.Empty:
+                        break
+
+                    if runner is not None and data.get('last_runner') == runner:
+                        skipped_tests.append((d_priority, data))
+                        #data = None
+                        continue
+                    else:
+                        print '     adding test to list-->',data['class_path']
+                        data_list.append((d_priority, data))
                     
 
             for skipped in skipped_tests:
@@ -148,26 +150,15 @@ class TestRunnerServer(TestRunner):
 
         self.runners.add(runner_id)
 
-        #def callback(priority, test_dict):
         def callback(data_list):
             if data_list is None or len(data_list) ==0:
                 return on_empty_callback()
 
-#            if test_dict.get('last_runner', None) != runner_id:# or (self.test_queue.empty() and len(self.runners) <= 1):
             test_list = []
             for priority, test_dict in data_list:
                 self.check_out_class(runner_id, test_dict)
                 test_list.append(test_dict)
             on_test_callback(test_list)
-#            else:
-#                if self.test_queue.empty():
-                    # Put the test back in the queue, and queue ourselves to pick up the next test queued.
-#                    self.test_queue.put(priority, test_dict)
-#                    self.test_queue.callback_queue.put((-1, callback))
-#                else:
-                    # Get the next test, process it, then place the old test back in the queue.
-#                    self.test_queue.get(0, callback, runner=runner_id)
-#                    self.test_queue.put(priority, test_dict)
 
         self.test_queue.get(0, callback, runner=runner_id)
 
@@ -225,21 +216,14 @@ class TestRunnerServer(TestRunner):
                 if self.revision and self.revision != handler.get_argument('revision'):
                     return handler.send_error(409, reason="Incorrect revision %s -- server is running revision %s" % (handler.get_argument('revision'), self.revision))
 
-                #def callback(test_dict):
                 def callback(data_list):
-                    #self.runners_outstanding.discard(runner_id)
-                    #handler.finish(json.dumps({
-                    #    'class': test_dict['class_path'],
-                    #    'methods': test_dict['methods'],
-                    #    'finished': False,
-                    #}))
                     self.runners_outstanding.discard(runner_id)
                     strs = [json.dumps({
                         'class': test_dict['class_path'],
                         'methods': test_dict['methods'],
                         'finished': False,
                     }) for test_dict in data_list]
-                    json_str = '['+strs[0]+']'
+                    json_str = '[%s]' % ',\n'.join(strs)
                     print 'json str->',json_str
                     handler.finish(json_str)
 

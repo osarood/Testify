@@ -39,7 +39,7 @@ class TestRunnerClient(TestRunner):
             )
             first_connect = False
             for d_ins in d_list:
-                class_path, methods, finished = (d_ins.get('class'), d_ins.get('methods'), d_ins['finished'])
+                class_path, methods, finished = (d_ins.get('class'), d_ins.get('methods'), d_ins['finished']) 
                 if class_path and methods:
                     module_path, _, class_name = class_path.partition(' ')
 
@@ -53,6 +53,7 @@ class TestRunnerClient(TestRunner):
             else:
                 url = 'http://%s/tests?runner=%s' % (self.connect_addr, self.runner_id)
             response = urllib2.urlopen(url)
+            print '    client resp--->',response.read()
             d_list = json.load(response)
             #d = d_list[0]
             #return (d.get('class'), d.get('methods'), d['finished'])
