@@ -91,7 +91,7 @@ class AsyncDelayedQueue(object):
             for skipped in skipped_tests:
                 self.data_queue.put(skipped)
 
-            if data is None:
+            if len(data_list) == 0:
                 skipped_callbacks.append((c_priority, callback, runner))
                 callback = None
                 continue
@@ -150,7 +150,7 @@ class TestRunnerServer(TestRunner):
 
         #def callback(priority, test_dict):
         def callback(data_list):
-            if len(data_list) ==0:
+            if data_list is None or len(data_list) ==0:
                 return on_empty_callback()
 
 #            if test_dict.get('last_runner', None) != runner_id:# or (self.test_queue.empty() and len(self.runners) <= 1):
