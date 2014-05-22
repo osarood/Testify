@@ -34,11 +34,12 @@ class AsyncDelayedQueue(object):
         self.data_queue = Queue.PriorityQueue()
         self.callback_queue = Queue.PriorityQueue()
         self.finalized = False
+        self.class_exe_times_dict = {}
 
     def get(self, c_priority, callback, runner=None):
         """Queue up a callback to receive a test."""
         if self.finalized:
-            callback(None, None)
+            callback(None)
             return
 
         self.callback_queue.put((c_priority, callback, runner))
@@ -74,7 +75,8 @@ class AsyncDelayedQueue(object):
 
             skipped_tests = []
             while len(data_list) == 0:
-                for x in range(0,2):
+                total_expected_time = 0
+                while total_expected_time <10:
                     data = None
                     try:
                         d_priority, data = self.data_queue.get_nowait()
@@ -88,6 +90,9 @@ class AsyncDelayedQueue(object):
                     else:
                         print '     adding test to list-->',data['class_path']
                         data_list.append((d_priority, data))
+                        this_class_name = data['class_path'].split()
+                        break
+#                        total_expected_time += self.class_exe_times_dict[this_class_name[0]+'.'+this_class_name[1]]
                     
 
             for skipped in skipped_tests:
@@ -144,6 +149,7 @@ class TestRunnerServer(TestRunner):
         self.shutting_down = False # Whether shutdown() has been called.
 
         super(TestRunnerServer, self).__init__(*args, **kwargs)
+        self.test_queue.class_exe_times_dict = self.class_exe_times_dict
 
     def get_next_test(self, runner_id, on_test_callback, on_empty_callback):
         """Enqueue a callback (which should take one argument, a test_dict) to be called when the next test is available."""
@@ -211,6 +217,7 @@ class TestRunnerServer(TestRunner):
                         'finished': True,
                     })
                     json_str = '['+strs[0]+']'
+                    print '               ***** SHUTTING DOWN *** ->',json_str
                     return handler.finish(json_str)
 
                 if self.revision and self.revision != handler.get_argument('revision'):
@@ -233,6 +240,7 @@ class TestRunnerServer(TestRunner):
                         'finished': True,
                     })
                     json_str = '['+strs[0]+']'
+                    print '               ***** empty callback *** ->',json_str
                     return handler.finish(json_str)
 
                 self.get_next_test(runner_id, callback, empty_callback)
@@ -269,6 +277,7 @@ class TestRunnerServer(TestRunner):
         try:
             # Enqueue all of our tests.
             discovered_tests = []
+            cur_prio = 0
             try:
                 discovered_tests = self.discover()
             except Exception, exc:
@@ -286,7 +295,8 @@ class TestRunnerServer(TestRunner):
                     # name 'run'. Add this result to the list we expect to get
                     # back from the client.
                     test_dict['methods'].append('run')
-                    self.test_queue.put(0, test_dict)
+                    self.test_queue.put(cur_prio, test_dict)
+                    cur_prio += 1
 
             # Start an HTTP server.
             application = tornado.web.Application([

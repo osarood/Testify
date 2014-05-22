@@ -21,6 +21,7 @@ __testify = 1
 from collections import defaultdict
 import itertools
 import functools
+from operator import itemgetter
 import pprint
 import sys
 
@@ -73,6 +74,9 @@ class TestRunner(object):
 
         self.failure_limit = failure_limit
         self.failure_count = 0
+
+        self.big_dict = []
+        self.class_exe_times_dict = {}
 
     @classmethod
     def get_test_method_name(cls, test_method):
@@ -145,7 +149,42 @@ class TestRunner(object):
         test_method_count = sum(len(list(test_case.runnable_test_methods())) for test_case in discovered_tests)
         for reporter in self.test_reporters:
             reporter.test_counts(test_case_count, test_method_count)
-        return discovered_tests
+
+# osarood scheduling change
+        sorted_disc_tests = []
+        print('--- about to open file -----')
+        fd = open('/nail/home/osarood/yelp/Testify/testify/exe_times.dat','r')
+        print('---- file opened ----')
+        exe_times_dict = {}
+        for line in fd:
+            #print('line->',line)
+            l = line.split()
+            exe_times_dict[l[0]]= float(l[1])
+        #print('\n\nxxxx->',exe_times_dict)
+        for idx, test_case in enumerate(discovered_tests):
+            #print('dddddddddddddddddd  m->',test_case.__module__,' c->',test_case.__class__.__name__)
+            class_path = test_case.__module__ + '.' + test_case.__class__.__name__
+            if class_path in exe_times_dict:
+                exe_t = exe_times_dict[class_path]
+            else:
+                exe_t = 0.0
+            self.big_dict.append({'class_name':class_path,'org_idx':idx,'exe_time':exe_t})
+
+        big_sorted = sorted(self.big_dict, key=itemgetter('exe_time'), reverse=True)
+        sorted_discovered_tests = list(discovered_tests)
+        print('---- sorting done ---- len->'+str(len(sorted_discovered_tests)))
+        for idx, this_class in enumerate(big_sorted):
+            unsorted_idx = big_sorted[idx]['org_idx']
+            sorted_discovered_tests[idx] = discovered_tests[unsorted_idx]
+            this_class_name = big_sorted[idx]['class_name']
+            self.class_exe_times_dict[this_class_name] = big_sorted[idx]['exe_time']
+        print('---- top 10 methods')
+        for x in range(0,3):
+            print(x,'->',sorted_discovered_tests[x])
+#####
+
+
+        return sorted_discovered_tests
 
     def run(self):
         """Instantiate our found test case classes and run their test methods.

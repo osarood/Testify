@@ -53,8 +53,9 @@ class TestRunnerClient(TestRunner):
             else:
                 url = 'http://%s/tests?runner=%s' % (self.connect_addr, self.runner_id)
             response = urllib2.urlopen(url)
-            print '    client resp--->',response.read()
+            #print '    client resp--->',response.read()
             d_list = json.load(response)
+            print '       d_list ->',d_list
             #d = d_list[0]
             #return (d.get('class'), d.get('methods'), d['finished'])
             return d_list
