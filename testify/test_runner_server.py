@@ -150,13 +150,15 @@ class TestRunnerServer(TestRunner):
 
         #def callback(priority, test_dict):
         def callback(data_list):
-            (priority, test_dict) = data_list[0]
-            if not test_dict:
+            if len(data_list) ==0:
                 return on_empty_callback()
 
 #            if test_dict.get('last_runner', None) != runner_id:# or (self.test_queue.empty() and len(self.runners) <= 1):
-            self.check_out_class(runner_id, test_dict)
-            on_test_callback([test_dict])
+            test_list = []
+            for priority, test_dict in data_list:
+                self.check_out_class(runner_id, test_dict)
+                test_list.append(test_dict)
+            on_test_callback(test_list)
 #            else:
 #                if self.test_queue.empty():
                     # Put the test back in the queue, and queue ourselves to pick up the next test queued.
