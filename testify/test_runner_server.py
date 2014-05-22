@@ -214,9 +214,11 @@ class TestRunnerServer(TestRunner):
 
                 if self.shutting_down:
                     self.runners_outstanding.discard(runner_id)
-                    return handler.finish(json.dumps({
+                    strs = json.dumps({
                         'finished': True,
-                    }))
+                    })
+                    json_str = '['+strs[0]+']'
+                    return handler.finish(json_str)
 
                 if self.revision and self.revision != handler.get_argument('revision'):
                     return handler.send_error(409, reason="Incorrect revision %s -- server is running revision %s" % (handler.get_argument('revision'), self.revision))
@@ -235,15 +237,17 @@ class TestRunnerServer(TestRunner):
                         'methods': test_dict['methods'],
                         'finished': False,
                     }) for test_dict in data_list]
-                    json_str = "[%s]" % ",\n".join(strs)
+                    json_str = '['+strs[0]+']'
                     print 'json str->',json_str
                     handler.finish(json_str)
 
                 def empty_callback():
                     self.runners_outstanding.discard(runner_id)
-                    handler.finish(json.dumps({
+                    strs = json.dumps({
                         'finished': True,
-                    }))
+                    })
+                    json_str = '['+strs[0]+']'
+                    return handler.finish(json_str)
 
                 self.get_next_test(runner_id, callback, empty_callback)
 
