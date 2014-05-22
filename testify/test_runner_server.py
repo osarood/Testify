@@ -118,7 +118,7 @@ class AsyncDelayedQueue(object):
         try:
             while True:
                 _, callback, _ = self.callback_queue.get_nowait()
-                callback(None, None)
+                callback(None)
         except Queue.Empty:
             pass
 
@@ -160,12 +160,14 @@ class TestRunnerServer(TestRunner):
             else:
                 if self.test_queue.empty():
                     # Put the test back in the queue, and queue ourselves to pick up the next test queued.
-                    self.test_queue.put(priority, test_dict)
+                    for priority1, test_dict1 in data_list:
+                        self.test_queue.put(priority1, test_dict1)
                     self.test_queue.callback_queue.put((-1, callback))
                 else:
                     # Get the next test, process it, then place the old test back in the queue.
                     self.test_queue.get(0, callback, runner=runner_id)
-                    self.test_queue.put(priority, test_dict)
+                    for priority1, test_dict1 in data_list:
+                        self.test_queue.put(priority1, test_dict1)
 
         self.test_queue.get(0, callback, runner=runner_id)
 
