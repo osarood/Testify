@@ -80,25 +80,24 @@ class AsyncDelayedQueue(object):
                     data = None
                     try:
                         d_priority, data = self.data_queue.get_nowait()
+                        data_list.append((d_priority, data))
+                        this_class_name = data['class_path'].split()
+                        break
+                        #total_expected_time += self.class_exe_times_dict[this_class_name[0]+'.'+this_class_name[1]]
                     except Queue.Empty:
                         break
 
                     if runner is not None and data.get('last_runner') == runner:
                         skipped_tests.append((d_priority, data))
-                        #data = None
+                        data = None
+                        data_list = []
                         continue
-                    else:
-                        #print '     adding test to list-->',data['class_path']
-                        data_list.append((d_priority, data))
-                        this_class_name = data['class_path'].split()
-                        #break
-                        total_expected_time += self.class_exe_times_dict[this_class_name[0]+'.'+this_class_name[1]]
                     
 
             for skipped in skipped_tests:
                 self.data_queue.put(skipped)
 
-            if len(data_list) == 0:
+            if len(data_list) < 1:
                 skipped_callbacks.append((c_priority, callback, runner))
                 callback = None
                 continue
@@ -158,7 +157,7 @@ class TestRunnerServer(TestRunner):
         self.runners.add(runner_id)
 
         def callback(data_list):
-            if data_list is None or len(data_list) ==0:
+            if data_list is None or len(data_list) <1:
                 return on_empty_callback()
 
             test_list = []

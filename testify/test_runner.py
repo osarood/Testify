@@ -183,7 +183,8 @@ class TestRunner(object):
             print(x,'->',sorted_discovered_tests[x])
 #####
 
-
+        del sorted_discovered_tests[100:]
+        print ('----- just truncated ---- ',len(sorted_discovered_tests))
         return sorted_discovered_tests
 
     def run(self):
