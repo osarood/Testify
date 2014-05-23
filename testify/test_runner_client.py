@@ -55,7 +55,7 @@ class TestRunnerClient(TestRunner):
             response = urllib2.urlopen(url)
             #print '    client resp--->',response.read()
             d_list = json.load(response)
-            print '       d_list ->',d_list
+            print '       d_list ->',len(d_list)
             #d = d_list[0]
             #return (d.get('class'), d.get('methods'), d['finished'])
             return d_list

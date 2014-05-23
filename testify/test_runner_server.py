@@ -76,7 +76,7 @@ class AsyncDelayedQueue(object):
             skipped_tests = []
             while len(data_list) == 0:
                 total_expected_time = 0
-                while total_expected_time <10:
+                while total_expected_time <20:
                     data = None
                     try:
                         d_priority, data = self.data_queue.get_nowait()
@@ -88,11 +88,11 @@ class AsyncDelayedQueue(object):
                         #data = None
                         continue
                     else:
-                        print '     adding test to list-->',data['class_path']
+                        #print '     adding test to list-->',data['class_path']
                         data_list.append((d_priority, data))
                         this_class_name = data['class_path'].split()
-                        break
-#                        total_expected_time += self.class_exe_times_dict[this_class_name[0]+'.'+this_class_name[1]]
+                        #break
+                        total_expected_time += self.class_exe_times_dict[this_class_name[0]+'.'+this_class_name[1]]
                     
 
             for skipped in skipped_tests:
@@ -107,6 +107,7 @@ class AsyncDelayedQueue(object):
             self.callback_queue.put(skipped)
 
         if callback is not None:
+            print '   SENDING ->', len(data_list),' OBJS',' runner ->',runner
             callback(data_list)
             tornado.ioloop.IOLoop.instance().add_callback(self.match)
 
@@ -231,7 +232,7 @@ class TestRunnerServer(TestRunner):
                         'finished': False,
                     }) for test_dict in data_list]
                     json_str = '[%s]' % ',\n'.join(strs)
-                    print 'json str->',json_str
+                    #print 'json str->',json_str
                     handler.finish(json_str)
 
                 def empty_callback():
@@ -431,6 +432,9 @@ class TestRunnerServer(TestRunner):
 
         if requeue_dict['methods']:
             self.test_queue.put(-1, requeue_dict)
+
+        if self.test_queue.empty():
+            print '   --- OK--> QUEUE EMPTY --- len ck-out->',len(self.checked_out)
 
         if self.test_queue.empty() and len(self.checked_out) == 0:
             self.shutdown()

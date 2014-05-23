@@ -167,7 +167,7 @@ class TestRunner(object):
             if class_path in exe_times_dict:
                 exe_t = exe_times_dict[class_path]
             else:
-                exe_t = 0.0
+                exe_t = 0.05
             self.big_dict.append({'class_name':class_path,'org_idx':idx,'exe_time':exe_t})
 
         big_sorted = sorted(self.big_dict, key=itemgetter('exe_time'), reverse=True)
