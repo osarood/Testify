@@ -39,6 +39,15 @@ class ResultLogHandler(logging.Handler):
 
 class JSONReporter(test_reporter.TestReporter):
     setup_exists = False
+    teardown_exists = False
+
+    def class_teardown_start(self, result):
+        self.teardown_start = time.time()
+        self.teardown_exists = True
+
+    def class_teardown_complete(self, result):
+        self.teardown_end = time.time()
+
     def class_setup_start(self, result):
         self.setup_start = time.time()
         self.setup_exists = True
@@ -90,7 +99,12 @@ class JSONReporter(test_reporter.TestReporter):
         if self.setup_exists:
             result['setup_time'] = self.setup_end - self.setup_start
         else:
-            result['setup_time'] = -1
+            result['setup_time'] = 0
+
+        if self.teardown_exists:
+            result['teardown_exists'] = self.teardown_end - self.teardown_start
+        else:
+            result['teardown_exists'] = 0
 
         self.log_file.write(json.dumps(result))
         self.log_file.write("\n")
