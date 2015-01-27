@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
+import time
 
 try:
     import simplejson as json  # noqa
@@ -37,6 +38,14 @@ class ResultLogHandler(logging.Handler):
 
 
 class JSONReporter(test_reporter.TestReporter):
+    setup_exists = False
+    def class_setup_start(self, result):
+        self.setup_start = time.time()
+        self.setup_exists = True
+
+    def class_setup_complete(self, result):
+        self.setup_end = time.time()
+
     def __init__(self, *args, **kwargs):
         super(JSONReporter, self).__init__(*args, **kwargs)
 
@@ -77,6 +86,11 @@ class JSONReporter(test_reporter.TestReporter):
         if not result['success']:
             if self.log_hndl:
                 result['log'] = self.log_hndl.results()
+
+        if self.setup_exists:
+            result['setup_time'] = self.setup_end - self.setup_start
+        else:
+            result['setup_time'] = -1
 
         self.log_file.write(json.dumps(result))
         self.log_file.write("\n")
