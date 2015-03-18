@@ -370,7 +370,7 @@ def _parse_test_runner_command_line_module_method_overrides(args):
     for arg in args[1:]:
         module_path_components = arg.split('.')
         module_name = module_path_components[0]
-        method_name = module_path_components[1] if len(module_path_components) > 1 else None
+        method_name = '.'.join(module_path_components[1:]) if len(module_path_components) > 1 else None
         if method_name:
             module_method_overrides[module_name].add(method_name)
         else:

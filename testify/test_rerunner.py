@@ -16,13 +16,11 @@ class TestRerunner(TestRunner):
         super(TestRerunner, self).__init__(*args, **kwargs)
 
     def discover(self):
-        for class_path, lines in groupby(self.rerun_test_file, lambda line: line.rpartition('.')[0]):
+        for class_path, lines in groupby(self.rerun_test_file, lambda line: ' '.join([line.split()[0],line.split()[1].split('.')[0]])):
             if not class_path:
                 # Skip blank lines
                 continue
-            methods = [line.rpartition('.')[2].strip() for line in lines]
-
+            methods = ['.'.join(line.split()[1].split('.',1)[1:]) for line in lines]
             module_path, _, class_name = class_path.partition(' ')
-
             klass = test_discovery.import_test_class(module_path, class_name)
             yield klass(name_overrides=methods)
