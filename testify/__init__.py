@@ -27,7 +27,7 @@ The basic components of this system are:
 # flake8: noqa
 from __future__ import absolute_import
 __testify = 1
-__version__ = "0.xxx.00267e310d6ffb1023cfc795f0230f7fb4e9e0d8"
+__version__ = "0.8.0.osaroodtry1"
 
 from .assertions import *
 
